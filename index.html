@@ -1,0 +1,648 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circuits Circle - Dashboard</title>
+    <!-- Tailwind CSS CDN for modern, responsive utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        /* Define the color palette based on the PDF */
+        :root {
+            --dark-bg: #1a1a1a;
+            --card-bg: #2d2d2d;
+            --primary-green: #4CAF50; /* Primary success/data color */
+            --secondary-yellow: #FFC107; /* Secondary alert/data color */
+            --text-light: #F0F0F0;
+            --text-dark: #333333;
+        }
+
+        /* Base styling */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+            line-height: 1.5;
+        }
+
+        /* --- Global Utility Classes --- */
+        .page-center {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- Login/Registration Box --- */
+        .auth-box {
+            background-color: white;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+        
+        .input-group {
+            display: flex;
+            align-items: center;
+            background-color: #f5f5f5;
+            border-radius: 9999px; /* Full rounded corners */
+            margin-bottom: 1.25rem;
+            padding: 0.75rem 1.25rem;
+            border: 1px solid #ddd;
+        }
+
+        .input-group i {
+            color: #888;
+            margin-right: 1rem;
+        }
+
+        .input-group input {
+            border: none;
+            background: none;
+            flex-grow: 1;
+            padding: 0.25rem 0;
+            font-size: 1rem;
+            outline: none;
+            color: var(--text-dark);
+        }
+
+        .main-button {
+            width: 100%;
+            padding: 1rem;
+            background-color: var(--primary-green);
+            color: white;
+            border: none;
+            border-radius: 9999px;
+            font-size: 1.125rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: background-color 0.3s, transform 0.1s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .main-button:hover {
+            background-color: #3e8e41;
+            transform: translateY(-1px);
+        }
+        
+        .link-button {
+            color: var(--primary-green);
+            font-weight: 600;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .link-button:hover {
+            color: #76ff7a;
+        }
+
+
+        /* --- Dashboard Layout --- */
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            grid-template-rows: auto 1fr;
+            grid-template-areas: 
+                "sidebar header"
+                "sidebar main";
+            min-height: 100vh;
+        }
+
+        .dashboard-header {
+            grid-area: header;
+            background-color: var(--card-bg);
+            border-bottom: 3px solid var(--primary-green);
+        }
+
+        .sidebar {
+            grid-area: sidebar;
+            background-color: #101010;
+        }
+
+        .dashboard-content {
+            grid-area: main;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        /* Sidebar Navigation */
+        .nav-item {
+            padding: 1rem 1.5rem;
+            color: var(--text-light);
+            text-decoration: none;
+            border-left: 5px solid transparent;
+            transition: background-color 0.3s, border-left-color 0.3s;
+            font-weight: 600;
+        }
+
+        .nav-item:hover {
+            background-color: #3e3e3e;
+        }
+
+        .nav-item.active {
+            background-color: var(--dark-bg);
+            border-left-color: var(--primary-green);
+            color: var(--primary-green);
+        }
+
+        /* Metric Cards */
+        .metric-card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+        .metric-card h3 {
+            color: var(--primary-green);
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+        }
+        .metric-card .value {
+            font-size: 2.5rem;
+            font-weight: 800;
+        }
+        
+        /* Bar Chart Styling */
+        .bar-chart-container {
+            height: 300px;
+            width: 100%;
+            background-color: #444;
+            border-radius: 8px;
+            padding: 1rem;
+            position:relative;
+            display:flex;
+            align-items: flex-end;
+            border-bottom: 2px solid var(--text-light);
+        }
+
+        .chart-section h3 {
+            border-bottom: 1px solid #444;
+            padding-bottom: 5rem;
+            margin-right: 14rem;
+        }
+
+        .bar-group {
+            height: 100%;
+            width: 10%;
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+            position: relative;
+        }
+
+        .bar {
+            width: 30%; 
+            border-radius: 4px 4px 0 0;
+            transition: height 0.5s;
+        }
+
+        .bar.white { background-color: white; }
+        .bar.green { background-color: var(--primary-green); }
+        .bar.yellow { background-color: var(--secondary-yellow); }
+
+        .month-label {
+            position: absolute;
+            bottom: -25px;
+            font-size: 0.75rem;
+            color: var(--text-light);
+            width: 100%;
+            text-align: center;
+        }
+        
+        /* Table Styling */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+
+        .data-table th, .data-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #444;
+        }
+
+        .data-table th {
+            background-color: #444;
+            color: var(--primary-green);
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .status-pending { color: var(--secondary-yellow); font-weight: 600; }
+        .status-completed { color: var(--primary-green); font-weight: 600; }
+        .status-fault { color: #f00; font-weight: 600; }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .dashboard-layout {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto 1fr;
+                grid-template-areas: 
+                    "header"
+                    "sidebar"
+                    "main";
+            }
+            .sidebar {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: space-around;
+            }
+            .nav-item {
+                flex: 1;
+                text-align: center;
+                border-left: none;
+                border-bottom: 3px solid transparent;
+            }
+            .nav-item.active {
+                border-left: none;
+                border-bottom-color: var(--primary-green);
+            }
+            .metrics-grid {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ==================================== -->
+    <!--          1. AUTHENTICATION PAGES     -->
+    <!-- ==================================== -->
+    <div id="auth-view" class="page-center">
+        
+        <!-- Login Form -->
+        <div id="login-form" class="auth-box">
+            <img src="https://raw.githubusercontent.com/nancyy-gupta/circuits/refs/heads/main/logo.jpg" alt="Solar Logo" style="width: 50px; height:40px;display: block;margin-left: auto;margin-right: auto;">
+            <h1 class="text-3xl font-bold mb-4" style="color:var(--text-dark)">User Login</h1>
+            <p class="text-xl font-bold mb-8 text-green-600">Circuits Circle</p>
+            <form onsubmit="handleLogin(event)">
+                <div class="input-group">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="login-email" placeholder="Email Id" required>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="login-password" placeholder="Password" required>
+                </div>
+                <button type="submit" class="main-button">Login</button>
+            </form>
+            <p class="text-sm mt-4 text-gray-500">
+                <span class="link-button" onclick="showRegister()">Register Here</span> | 
+                <span class="link-button">Forgot Password?</span>
+            </p>
+        </div>
+        
+        <!-- Registration Form (Initially Hidden) -->
+        <div id="register-form" class="auth-box" style="display: none;">
+            <img src="https://raw.githubusercontent.com/nancyy-gupta/circuits/refs/heads/main/logo.jpg" alt="Solar Logo" style="width: 50px; height:40px;display: block;margin-left: auto;margin-right: auto;">
+            <h1 class="text-3xl font-bold mb-4" style="color:var(--text-dark)">Register New User</h1>
+            <p class="text-xl font-bold mb-8 text-green-600">Circuits Circle</p>
+            <form onsubmit="handleRegister(event)">
+                <div class="input-group">
+                    <i class="fas fa-user"></i>
+                    <input type="text" placeholder="Full Name" required>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" placeholder="Email Id" required>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" placeholder="Create Password" required>
+                </div>
+                <button type="submit" class="main-button">Register</button>
+            </form>
+            <p class="text-sm mt-4 text-gray-500">
+                Already have an account? <span class="link-button" onclick="showLogin()">Login</span>
+            </p>
+        </div>
+    </div>
+
+    <!-- ==================================== -->
+    <!--          2. DASHBOARD PAGE           -->
+    <!-- ==================================== -->
+    <div id="dashboard-view" class="dashboard-layout" style="display: none;">
+        
+        <!-- Header -->
+        <header class="dashboard-header flex justify-between items-center px-6 py-4">
+            <img src="https://raw.githubusercontent.com/nancyy-gupta/circuits/refs/heads/main/logo.jpg" alt="Solar Logo" style="width: 50px; height:40px;">
+            <h1 class="text-2xl font-extrabold" style="color:var(--primary-green);margin-left: 30px;">Circuits Circle</h1>
+            <div class="flex items-center space-x-4">
+                <span id="cust-id" class="text-sm font-semibold">CUST ID: 4145</span>
+                <button onclick="handleLogout()" class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-white font-bold transition">Logout</button>
+            </div>
+        </header>
+        
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar flex flex-col pt-8">
+            <a href="#" class="nav-item active" data-section="overview">OVERVIEW</a>
+            <a href="#" class="nav-item" data-section="monitoring">MONITORING</a>
+            <a href="#" class="nav-item" data-section="maintenance">MAINTENANCE</a>
+            <a href="#" class="nav-item" data-section="alerts">ALERTS</a>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="dashboard-content">
+            
+            <!-- 2.1 OVERVIEW SECTION -->
+            <section id="overview" class="content-section" style="display: block;">
+                <h2 class="text-3xl font-bold mb-6">OVERVIEW</h2>
+                
+                <div class="metrics-grid grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="metric-card">
+                        <h3>EFFICIENCY</h3>
+                        <div class="value" style="color: var(--primary-green);">85%</div>
+                    </div>
+                    <div class="metric-card">
+                        <h3>BATTERY LEVEL</h3>
+                        <div class="value" style="color: var(--primary-green);">10800mAH</div>
+                    </div>
+                    <div class="metric-card">
+                        <h3>SUNLIGHT</h3>
+                        <div class="value" style="color: var(--secondary-yellow);">98W/m2</div>
+                        <!--SUNLIGHT-->
+                    </div>
+                </div>
+
+                <!-- LOAD CONSUMPTION TRENDS -->
+                <div class="chart-section p-10 rounded-lg mb-8" style="background-color: var(--card-bg);">
+                    <h3 class="text-xl font-bold mb-4">LOAD CONSUMPTION TRENDS (KW)</h3>
+                    <div class="bar-chart-container">
+                        <!-- Chart X-Axis/Data -->
+                        <div class="bar-group" style="left: 10%;">
+                            <div class="bar white" style="height: 25%;"></div>
+                            <div class="bar green" style="height: 25%;"></div>
+                            <div class="bar yellow" style="height: 20%;"></div>
+                            <span class="month-label">July</span>
+                        </div>
+                        
+                        <div class="bar-group" style="left: 30%;">
+                            <div class="bar white" style="height: 40%;"></div>
+                            <div class="bar green" style="height: 40%;"></div>
+                            <div class="bar yellow" style="height: 25%;"></div>
+                            <span class="month-label">August</span>
+                        </div>
+                        
+                        <div class="bar-group" style="left: 50%;">
+                            <div class="bar white" style="height: 100%;"></div>
+                            <div class="bar green" style="height: 75%;"></div>
+                            <div class="bar yellow" style="height: 25%;"></div>
+                            <span class="month-label">September</span>
+                        </div>
+                        
+                        
+                    </div>
+                    <div class="flex justify-left mt-8 space-x-6 text-sm">
+                        <span class="flex items-center"><div class="w-3 h-3 rounded-full mr-2" style="background-color: white;"></div> Load 1</span>
+                        <br>
+                        <span class="flex items-center"><div class="w-3 h-3 rounded-full mr-2" style="background-color: var(--primary-green);"></div> Load 2</span>
+                        <span class="flex items-center"><div class="w-3 h-3 rounded-full mr-2" style="background-color: var(--secondary-yellow);"></div> Load 3</span>
+                    </div>
+                </div>
+
+                <!-- PENDING MAINTENANCE -->
+                <div class="maintenance-section p-6 rounded-lg" style="background-color: var(--card-bg);">
+                    <h3 class="text-xl font-bold mb-4">MAINTENANCE - CHECKS (PENDING)</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>NAME</th>
+                                <th>DATE</th>
+                                <th>STATUS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Mrs. Shamita Raj</td>
+                                <td>30/7/2025</td>
+                                <td class="status-pending">PENDING</td>
+                            </tr>
+                            <tr>
+                                <td>Mr. Ronit Raj</td>
+                                <td>18/8/2025</td>
+                                <td class="status-pending">PENDING</td>
+                            </tr>
+                            <tr>
+                                <td>Mr. Kartik Raj</td>
+                                <td>23/9/2025</td>
+                                <td class="status-pending">PENDING</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            
+            <!-- 2.2 MONITORING SECTION -->
+            <section id="monitoring" class="content-section" style="display: none;">
+                <h2 class="text-3xl font-bold mb-6">MONITORING</h2>
+                <h3 class="text-xl font-semibold mb-4 text-gray-300">Efficiency Metrics</h3>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+                    <div class="metric-card">
+                        <h3>OUTPUT VOLTAGE</h3>
+                        <div class="value text-lg" style="color: var(--primary-green);">12VDC</div>
+                    </div>
+                    <div class="metric-card">
+                        <h3>CELL EFFICIENCY</h3>
+                        <div class="value text-lg" style="color: var(--primary-green);">90%</div>
+                    </div>
+                    <div class="metric-card">
+                        <h3>TEMPERATURE</h3>
+                        <div class="value text-lg" style="color: var(--primary-green);">28°C</div>
+                    </div>
+                    <div class="metric-card">
+                        <h3>HEALTH STATUS</h3>
+                        <div class="value text-lg" style="color: var(--primary-green);">OK</div>
+                    </div>
+                </div>
+
+                <h3 class="text-xl font-semibold mb-4 text-gray-300">System Diagram</h3>
+                <div class="p-6 rounded-lg" style="background-color: var(--card-bg); min-height: 250px;">
+                    <p class="text-center text-lg text-gray-400">
+                        [Image of Solar System Diagram] - In a real app, this would be an interactive SVG graphic.
+                    </p>
+                    <div class="flex justify-around mt-4">
+                        <span class="text-center"><i class="fas fa-solar-panel text-3xl mb-1 text-yellow-400"></i><br>Solar Panel</span>
+                        <span class="text-center text-3xl"> &rarr; </span>
+                        <span class="text-center"><i class="fas fa-battery-three-quarters text-3xl mb-1 text-gray-400"></i><br>Charge Controller</span>
+                        <span class="text-center text-3xl"> &rarr; </span>
+                        <span class="text-center"><i class="fas fa-microchip text-3xl mb-1 text-red-400"></i><br>Invertor</span>
+                        <span class="text-center text-3xl"> &rarr; </span>
+                        <span class="text-center"><i class="fas fa-lightbulb text-3xl mb-1 text-white"></i><br>Load</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2.3 MAINTENANCE SECTION -->
+            <section id="maintenance" class="content-section" style="display: none;">
+                <h2 class="text-3xl font-bold mb-6">MAINTENANCE</h2>
+                <h3 class="text-xl font-semibold mb-4 text-gray-300">Recent Service History (CUST ID: 4145)</h3>
+                
+                <div class="p-6 rounded-lg mb-8" style="background-color: var(--card-bg);">
+                    <div class="border-l-4 p-4" style="border-left-color: var(--primary-green);">
+                        <p class="text-lg font-bold">Service Date: 3rd Jan, 2023</p>
+                        <p>Technician: <span style="color: var(--primary-green);">Mrs. Shamita Raj</span> (Experience: 4 Year Panel Installation)</p>
+                        <p>Product Status: <span class="font-bold">CHECKED</span></p>
+                        <p>Problem Identified: <span class="font-bold status-fault">Invertor Short Circuited!</span></p>
+                        <p>AMC Cover: <span class="font-bold status-completed">Covered</span></p>
+                    </div>
+                </div>
+                
+                <h3 class="text-xl font-semibold mb-4 text-gray-300">Schedule New Maintenance</h3>
+                <button class="main-button w-auto px-8" style="background-color: #3b82f6;">Request Service</button>
+            </section>
+            
+            <!-- 2.4 ALERTS SECTION -->
+            <section id="alerts" class="content-section" style="display: none;">
+                <h2 class="text-3xl font-bold mb-6">ALERTS</h2>
+                <h3 class="text-xl font-semibold mb-4 text-gray-300">Current Fault Predictions</h3>
+                
+                <div class="p-6 rounded-lg mb-8 border-l-4" style="background-color: var(--card-bg); border-left-color: #f00;">
+                    <p class="text-xl font-bold text-red-500 mb-2">INVERTOR FAULT PREDICTED!</p>
+                    <p>Remaining Time: *12 Days*</p>
+                    <p>Type: *Invertor Short Circuited*</p>
+                </div>
+                
+                <h3 class="text-xl font-semibold mb-4 text-gray-300">Open Work Order Alerts (Operator View Sample)</h3>
+                <table class="data-table alert-table">
+                    <thead>
+                        <tr>
+                            <th>S.No.</th>
+                            <th>CUSTOMER ID</th>
+                            <th>PRODUCT TO BE INSTALLED</th>
+                            <th>ROOT CAUSE</th>
+                            <th>STATUS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>412348</td>
+                            <td>INVERTOR</td>
+                            <td>FAULTY INVERTOR</td>
+                            <td class="status-pending">OPEN</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>312455</td>
+                            <td>SOLAR PANEL</td>
+                            <td>CRACKS IN PANEL</td>
+                            <td class="status-pending">OPEN</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>123553</td>
+                            <td>RELAYS</td>
+                            <td>SHORT CIRCUIT</td>
+                            <td class="status-completed">ASSIGNED</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+            
+        </main>
+    </div>
+
+    <!-- ==================================== -->
+    <!--          3. JAVASCRIPT LOGIC         -->
+    <!-- ==================================== -->
+    <script>
+        // --- AUTHENTICATION SIMULATION ---
+        
+        // State management for current view
+        let isAuthenticated = false;
+
+        function showLogin() {
+            document.getElementById('register-form').style.display = 'none';
+            document.getElementById('login-form').style.display = 'block';
+        }
+
+        function showRegister() {
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('register-form').style.display = 'block';
+        }
+
+        // Simulates API call for login
+        function handleLogin(event) {
+            event.preventDefault();
+            // In a real app: fetch(api/login, { method: 'POST', body: data })
+            
+            console.log('Simulating login...');
+            
+            // Minimal validation
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            if (email && password) {
+                isAuthenticated = true;
+                // Transition to dashboard
+                document.getElementById('auth-view').style.display = 'none';
+                document.getElementById('dashboard-view').style.display = 'grid';
+            } else {
+                alert('Please enter email and password.'); // Replace with custom UI alert
+            }
+        }
+        
+        // Simulates API call for registration
+        function handleRegister(event) {
+            event.preventDefault();
+            // In a real app: fetch(api/register, { method: 'POST', body: data })
+
+            console.log('Simulating registration...');
+            
+            // Assuming registration is always successful for the demo
+            alert('Registration successful! Please log in with your new credentials.'); // Replace with custom UI alert
+            showLogin();
+        }
+
+        function handleLogout() {
+            isAuthenticated = false;
+            // Transition back to login
+            document.getElementById('dashboard-view').style.display = 'none';
+            document.getElementById('auth-view').style.display = 'flex';
+            showLogin();
+        }
+
+        // --- DASHBOARD TAB SWITCHING ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const navItems = document.querySelectorAll('.nav-item');
+            const contentSections = document.querySelectorAll('.content-section');
+
+            navItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetSectionId = item.getAttribute('data-section');
+
+                    // 1. Update navigation active state
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    item.classList.add('active');
+
+                    // 2. Switch content visibility
+                    contentSections.forEach(section => {
+                        section.style.display = 'none';
+                    });
+                    document.getElementById(targetSectionId).style.display = 'block';
+                });
+            });
+            
+            // Initialize: Show login page by default
+            if (!isAuthenticated) {
+                document.getElementById('auth-view').style.display = 'flex';
+                document.getElementById('dashboard-view').style.display = 'none';
+            }
+        });
+    </script>
+
+</body>
+</html>
